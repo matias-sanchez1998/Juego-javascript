@@ -210,7 +210,7 @@ function moveLeft() {
   }
 }
 function moveRight() {
-  if ((playerPosition.x + elementsSize - 6) >= canvasSize) {
+  if ((playerPosition.x + elementsSize - 10) >= canvasSize) {
   } else {
     playerPosition.x += elementsSize;
     startGame();
