@@ -7,6 +7,7 @@ const btnDown = document.querySelector('#down');
 const spanLives = document.querySelector('#lives');
 const spanTime = document.querySelector('#time');
 const spanRecord = document.querySelector('#record');
+const buttonResetGame = document.querySelector('#reset');
 
 let canvasSize;
 let elementsSize;
@@ -33,19 +34,18 @@ window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
 
 
-
 function setCanvasSize() {
   if (window.innerHeight > window.innerWidth) {
     canvasSize = window.innerWidth * 0.7;
   } else {
     canvasSize = window.innerHeight * 0.7;
   }
-  
+
   canvasSize = Number(canvasSize.toFixed(0));
-  
+
   canvas.setAttribute('width', canvasSize);
   canvas.setAttribute('height', canvasSize);
-  
+
   elementsSize = canvasSize / 10.5;
 
   playerPosition.x = undefined;
@@ -59,25 +59,30 @@ function startGame() {
   game.textAlign = 'end';
 
   const map = maps[level];
-
+  if (lives < 0) {
+    gameLose();
+    return
+  }
   if (!map) {
     gameWin();
     return;
   }
-
+  
   if (!timeStart) {
     timeStart = Date.now();
     timeInterval = setInterval(showTime, 100);
     showRecord();
   }
+
   
   const mapRows = map.trim().split('\n');
   const mapRowCols = mapRows.map(row => row.trim().split(''));
 
+
   showLives();
-  
+
   enemyPositions = [];
-  game.clearRect(0,0,canvasSize, canvasSize);
+  game.clearRect(0, 0, canvasSize, canvasSize);
 
   mapRowCols.forEach((row, rowI) => {
     row.forEach((col, colI) => {
@@ -98,13 +103,14 @@ function startGame() {
           x: posX,
           y: posY,
         });
-       
+
       }
-      
+
       game.fillText(emoji, posX, posY);
     });
   });
-
+  buttonResetGame.addEventListener('click', () => location.reload());
+ 
   movePlayer();
 }
 
@@ -112,7 +118,6 @@ function movePlayer() {
   const giftCollisionX = playerPosition.x.toFixed(0) == giftPosition.x.toFixed(0);
   const giftCollisionY = playerPosition.y.toFixed(0) == giftPosition.y.toFixed(0);
   const giftCollision = giftCollisionX && giftCollisionY;
-  console.log(giftPosition,playerPosition);
   if (giftCollision) {
     levelWin();
   }
@@ -122,9 +127,12 @@ function movePlayer() {
     const enemyCollisionY = enemy.y.toFixed(0) == playerPosition.y.toFixed(0);
     return enemyCollisionX && enemyCollisionY;
   });
-  
+
   if (enemyCollision) {
+
     levelFail();
+    game.fillText(emojis['META'], giftPosition.x, giftPosition.y);
+
   }
 
   game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
@@ -136,21 +144,26 @@ function levelWin() {
 }
 
 function levelFail() {
-  lives--;
-  
-  if (lives <= 0) {
-    level = 0;
-    lives = 3;
-    timeStart = undefined;
-  }
 
+  lives--;
   playerPosition.x = undefined;
   playerPosition.y = undefined;
-  startGame();
+
+  startGame()
+}
+
+function gameLose() {
+  game.clearRect(0,0,canvasSize,canvasSize)  
+  animationWinorLose('GAME_OVER', lose);
+  console.log('lose');
+  clearInterval(timeInterval);
+  
 }
 
 function gameWin() {
+  console.log('¡Terminaste el juego!');
   clearInterval(timeInterval);
+  game.clearRect(0,0,canvasSize,canvasSize)  
 
   const recordTime = localStorage.getItem('record_time');
   const playerTime = Date.now() - timeStart;
@@ -158,19 +171,56 @@ function gameWin() {
   if (recordTime) {
     if (recordTime >= playerTime) {
       localStorage.setItem('record_time', playerTime);
-    } else {
-    }
+      animationWinorLose('WIN',win)    } else {
+      animationWinorLose('WIN',win)    }
   } else {
     localStorage.setItem('record_time', playerTime);
-  }
+    animationWinorLose('WIN',win)  }
 
 }
 
+function animationWinorLose(emojiString, array) {
+ 
+
+    const map = array[0];
+    const mapRows = map.trim().split('\n');
+    const mapRowCols = mapRows.map(row => row.trim().split(''));
+
+
+
+    mapRowCols.forEach((row, rowI) => {
+      row.forEach((col, colI) => {
+        const emoji = emojis[emojiString];
+        const posX = (elementsSize * (colI + 1) + 20);
+        const posY = (elementsSize * (rowI + 1) + 11);
+
+        if (col == 'X') {
+          enemyPositions.push({
+            x: posX,
+            y: posY,
+          });
+          game.fillText(emoji, posX, posY);
+        }
+
+
+      });
+    });
+  }
+
+
+
+
+
 function showLives() {
-  const heartsArray = Array(lives).fill(emojis['HEART']); // [1,2,3]
-  
-  spanLives.innerHTML = "";
-  heartsArray.forEach(heart => spanLives.append(heart));
+ 
+  let text = []
+
+  for (let i = 0; i < lives; i++) {
+    text.push('💙')
+  }
+  spanLives.innerHTML = text.join(' ')
+
+
 }
 
 function showTime() {
@@ -195,7 +245,7 @@ function moveByKeys(event) {
 }
 function moveUp() {
 
-  if ((playerPosition.y - elementsSize +12) < elementsSize) {
+  if ((playerPosition.y - elementsSize + 12) < elementsSize) {
   } else {
     playerPosition.y -= elementsSize;
     startGame();
@@ -217,8 +267,8 @@ function moveRight() {
   }
 }
 function moveDown() {
-  
-  if ((playerPosition.y + elementsSize ) > (canvasSize +22)) {
+
+  if ((playerPosition.y + elementsSize) > (canvasSize + 22)) {
 
   } else {
     playerPosition.y += elementsSize;

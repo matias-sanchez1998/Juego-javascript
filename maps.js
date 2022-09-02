@@ -8,9 +8,37 @@ const emojis = {
   'GAME_OVER': '👎',
   'WIN': '🏆',
   'HEART': '💙',
-  'COLLISION':"🔥"
+  'COLLISION':"🔥",
+  'META': '🏁'
+  
 };
 const maps = [];
+const lose = [];
+const win = [];
+win.push(`
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+XXXXXXXXXX
+`)
+lose.push(`
+  ----------
+  ----------
+  --XXXXX---
+  --X-------
+  --X-------
+  --XXXXX---
+  --X-------
+  --X-------
+  --X-------
+  ----------
+`); 
 maps.push(`
   IXXXXXXXXX
   -XXXXXXXXX
