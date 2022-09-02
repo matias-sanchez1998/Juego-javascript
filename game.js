@@ -26,6 +26,10 @@ const giftPosition = {
   x: undefined,
   y: undefined,
 };
+let collisionPosition = {
+  x: undefined,
+  y: undefined,
+};
 
 
 let enemyPositions = [];
@@ -67,14 +71,14 @@ function startGame() {
     gameWin();
     return;
   }
-  
+
   if (!timeStart) {
     timeStart = Date.now();
     timeInterval = setInterval(showTime, 100);
     showRecord();
   }
 
-  
+
   const mapRows = map.trim().split('\n');
   const mapRowCols = mapRows.map(row => row.trim().split(''));
 
@@ -110,7 +114,7 @@ function startGame() {
     });
   });
   buttonResetGame.addEventListener('click', () => location.reload());
- 
+
   movePlayer();
 }
 
@@ -127,43 +131,47 @@ function movePlayer() {
     const enemyCollisionY = enemy.y.toFixed(0) == playerPosition.y.toFixed(0);
     return enemyCollisionX && enemyCollisionY;
   });
-
   if (enemyCollision) {
 
+    collisionPosition = enemyCollision
     levelFail();
-    game.fillText(emojis['META'], giftPosition.x, giftPosition.y);
+    game.fillText(emojis['COLLISION'], collisionPosition.x-10, collisionPosition.y);
+
 
   }
 
-  game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
+  game.fillText(emojis['PLAYER'], playerPosition.x , playerPosition.y);
 }
 
 function levelWin() {
   level++;
+  
   startGame();
 }
 
 function levelFail() {
 
+
   lives--;
   playerPosition.x = undefined;
   playerPosition.y = undefined;
+
 
   startGame()
 }
 
 function gameLose() {
-  game.clearRect(0,0,canvasSize,canvasSize)  
+  game.clearRect(0, 0, canvasSize, canvasSize)
   animationWinorLose('GAME_OVER', lose);
   console.log('lose');
   clearInterval(timeInterval);
-  
+
 }
 
 function gameWin() {
   console.log('¡Terminaste el juego!');
   clearInterval(timeInterval);
-  game.clearRect(0,0,canvasSize,canvasSize)  
+  game.clearRect(0, 0, canvasSize, canvasSize)
 
   const recordTime = localStorage.getItem('record_time');
   const playerTime = Date.now() - timeStart;
@@ -171,48 +179,49 @@ function gameWin() {
   if (recordTime) {
     if (recordTime >= playerTime) {
       localStorage.setItem('record_time', playerTime);
-      animationWinorLose('WIN',win)    } else {
-      animationWinorLose('WIN',win)    }
+      animationWinorLose('WIN', win)
+    } else {
+      animationWinorLose('WIN', win)
+    }
   } else {
     localStorage.setItem('record_time', playerTime);
-    animationWinorLose('WIN',win)  }
+    animationWinorLose('WIN', win)
+  }
 
 }
 
 function animationWinorLose(emojiString, array) {
- 
-
-    const map = array[0];
-    const mapRows = map.trim().split('\n');
-    const mapRowCols = mapRows.map(row => row.trim().split(''));
 
 
-
-    mapRowCols.forEach((row, rowI) => {
-      row.forEach((col, colI) => {
-        const emoji = emojis[emojiString];
-        const posX = (elementsSize * (colI + 1) + 20);
-        const posY = (elementsSize * (rowI + 1) + 11);
-
-        if (col == 'X') {
-          enemyPositions.push({
-            x: posX,
-            y: posY,
-          });
-          game.fillText(emoji, posX, posY);
-        }
+  const map = array[0];
+  const mapRows = map.trim().split('\n');
+  const mapRowCols = mapRows.map(row => row.trim().split(''));
 
 
-      });
+
+  mapRowCols.forEach((row, rowI) => {
+    row.forEach((col, colI) => {
+      const emoji = emojis[emojiString];
+      const posX = (elementsSize * (colI + 1) + 20);
+      const posY = (elementsSize * (rowI + 1) + 11);
+
+      if (col == 'X') {
+        enemyPositions.push({
+          x: posX,
+          y: posY,
+        });
+        game.fillText(emoji, posX, posY);
+      }
+
+
     });
-  }
-
-
+  });
+}
 
 
 
 function showLives() {
- 
+
   let text = []
 
   for (let i = 0; i < lives; i++) {
@@ -222,6 +231,9 @@ function showLives() {
 
 
 }
+
+
+
 
 function showTime() {
   spanTime.innerHTML = Date.now() - timeStart;
